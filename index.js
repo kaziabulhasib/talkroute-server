@@ -23,6 +23,15 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
+    //------------------------------------------------------------
+    const postsCollection = client.db("TalkRouteDb").collection("Posts");
+    // get all posts
+    app.get("/posts", async (req, res) => {
+      const result = await postsCollection.find().toArray();
+      res.send(result);
+    });
+    //------------------------------------------------------------
+    // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
