@@ -63,6 +63,7 @@ async function run() {
 
     app.post("/posts", async (req, res) => {
       const PostCol = req.body;
+      PostCol.postTime = Date.now();
       const result = await postsCollection.insertOne(PostCol);
       res.send(result);
     });
