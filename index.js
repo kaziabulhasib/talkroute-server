@@ -59,6 +59,24 @@ async function run() {
       res.send(result);
     });
 
+    // Get a post by user emial
+
+    app.get("/posts/user/:email", async (req, res) => {
+      try {
+        const email = req.params.email;
+        const result = await postsCollection
+          .find({
+            authorEmail: email,
+          })
+          .sort({ postTime: -1 })
+          .toArray();
+        res.send(result);
+      } catch (error) {
+        console.error(error);
+        res.status(500).send("Error retrieving posts for user");
+      }
+    });
+
     // post a post
 
     app.post("/posts", async (req, res) => {
