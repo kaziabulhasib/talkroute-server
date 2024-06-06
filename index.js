@@ -25,6 +25,7 @@ async function run() {
   try {
     //------------------------------------------------------------
     const postsCollection = client.db("TalkRouteDb").collection("posts");
+    const commentsCollection = client.db("TalkRouteDb").collection("comments");
 
     // Get all posts
     app.get("/posts", async (req, res) => {
@@ -59,7 +60,7 @@ async function run() {
       res.send(result);
     });
 
-    // delete a post by id
+    // delete a post
 
     app.delete("/posts/:id", async (req, res) => {
       const id = req.params.id;
@@ -92,6 +93,15 @@ async function run() {
       const PostCol = req.body;
       PostCol.postTime = Date.now();
       const result = await postsCollection.insertOne(PostCol);
+      res.send(result);
+    });
+
+    //------------------------------------------------------------comments routes
+
+    // Get all comments
+
+    app.get("/comments", async (req, res) => {
+      const result = await commentsCollection.find().toArray();
       res.send(result);
     });
 
