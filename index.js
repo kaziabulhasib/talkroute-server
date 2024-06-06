@@ -59,6 +59,15 @@ async function run() {
       res.send(result);
     });
 
+    // delete a post by id
+
+    app.delete("/posts/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await postsCollection.deleteOne(query);
+      res.send(result);
+    });
+
     // Get a post by user emial
 
     app.get("/posts/user/:email", async (req, res) => {
