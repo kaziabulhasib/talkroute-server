@@ -92,6 +92,7 @@ async function run() {
     app.post("/posts", async (req, res) => {
       const PostCol = req.body;
       PostCol.postTime = Date.now();
+      PostCol.commentCount = 0;
       const result = await postsCollection.insertOne(PostCol);
       res.send(result);
     });
@@ -111,6 +112,12 @@ async function run() {
     app.post("/comments", async (req, res) => {
       const comment = req.body;
       const result = await commentsCollection.insertOne(comment);
+      if (result.insertedId) {
+        await postsCollection.updateOne(
+          { postTitle: comment.postTitle },
+          { $inc: { commentCount: 1 } }
+        );
+      }
       res.send(result);
     });
     //------------------------------------------------------------
