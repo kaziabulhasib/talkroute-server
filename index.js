@@ -104,7 +104,15 @@ async function run() {
       const result = await commentsCollection.find().toArray();
       res.send(result);
     });
+    // Get comment by post id || post title
 
+    //send all comment to db
+
+    app.post("/comments", async (req, res) => {
+      const comment = req.body;
+      const result = await commentsCollection.insertOne(comment);
+      res.send(result);
+    });
     //------------------------------------------------------------
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
