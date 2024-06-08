@@ -130,6 +130,85 @@ async function run() {
       }
       res.send(result);
     });
+
+    // upvote update
+
+    app.post("/posts/:id/upvote", async (req, res) => {
+      const { userId } = req.body;
+      const postId = req.params.id;
+
+      if (!ObjectId.isValid(postId)) {
+        return res.status(400).send("Invalid post ID format");
+      }
+
+      try {
+        const post = await postsCollection.findOne({
+          _id: new ObjectId(postId),
+        });
+
+        if (!post) {
+          return res.status(404).send("Post not found");
+        }
+
+        if (post.upvotedUsers && post.upvotedUsers.includes(userId)) {
+          return res.status(400).send("User has already upvoted this post");
+        }
+
+        const result = await postsCollection.updateOne(
+          { _id: new ObjectId(postId) },
+          {
+            $inc: { upVote: 1 },
+            $push: { upvotedUsers: userId },
+          }
+        );
+
+        res.send(result);
+      } catch (error) {
+        console.error(error);
+        res.status(500).send("Error upvoting post");
+      }
+    });
+    //
+    // Downvote a post
+    app.post("/posts/:id/downvote", async (req, res) => {
+      const postId = req.params.id;
+      const userId = req.body.userId;
+
+      if (!ObjectId.isValid(postId)) {
+        return res.status(400).send("Invalid post ID format");
+      }
+
+      try {
+        const post = await postsCollection.findOne({
+          _id: new ObjectId(postId),
+        });
+        if (!post) {
+          return res.status(404).send("Post not found");
+        }
+
+        if (!post.downVoters) {
+          post.downVoters = [];
+        }
+
+        if (post.downVoters.includes(userId)) {
+          return res.status(400).send("User has already downvoted this post");
+        }
+
+        await postsCollection.updateOne(
+          { _id: new ObjectId(postId) },
+          {
+            $inc: { downVote: 1 },
+            $push: { downVoters: userId },
+          }
+        );
+
+        res.status(200).send("Downvote added successfully");
+      } catch (error) {
+        console.error("Error handling downvote:", error);
+        res.status(500).send("Internal server error");
+      }
+    });
+
     //------------------------------------------------------------
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
