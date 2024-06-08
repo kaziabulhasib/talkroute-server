@@ -105,7 +105,17 @@ async function run() {
       const result = await commentsCollection.find().toArray();
       res.send(result);
     });
-    // Get comment by post id || post title
+
+    // Get comments by post ID
+    app.get("/comments/post/:postId", async (req, res) => {
+      const postId = req.params.postId;
+      if (!ObjectId.isValid(postId)) {
+        return res.status(400).send("Invalid post ID format");
+      }
+      const query = { postId: postId };
+      const result = await commentsCollection.find(query).toArray();
+      res.send(result);
+    });
 
     //send all comment to db
 
