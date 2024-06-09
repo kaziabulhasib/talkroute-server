@@ -29,6 +29,11 @@ async function run() {
     const commentsCollection = client.db("TalkRouteDb").collection("comments");
 
     // user related Api
+    // get all user
+    app.get("/users", async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    });
 
     // post user
     app.post("/users", async (req, res) => {
@@ -41,6 +46,26 @@ async function run() {
       const result = await userCollection.insertOne(user);
       res.send(result);
     });
+
+    // make admin with patch
+
+    app.patch(
+      "/users/admin/:id",
+
+      async (req, res) => {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const updatedDoc = {
+          $set: {
+            role: "admin",
+          },
+        };
+        const result = await userCollection.updateOne(filter, updatedDoc);
+        res.send(result);
+      }
+    );
+
+    //------------------------------------------------------------user related end
 
     // Get all posts
     app.get("/posts", async (req, res) => {
