@@ -24,8 +24,23 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     //------------------------------------------------------------
+    const userCollection = client.db("TalkRouteDb").collection("users");
     const postsCollection = client.db("TalkRouteDb").collection("posts");
     const commentsCollection = client.db("TalkRouteDb").collection("comments");
+
+    // user related Api
+
+    // post user
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email };
+      const existingUser = await userCollection.findOne(query);
+      if (existingUser) {
+        return res.send({ message: "user already exists", insertedId: null });
+      }
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
 
     // Get all posts
     app.get("/posts", async (req, res) => {
