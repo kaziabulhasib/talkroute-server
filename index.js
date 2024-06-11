@@ -29,6 +29,9 @@ async function run() {
     const userCollection = client.db("TalkRouteDb").collection("users");
     const postsCollection = client.db("TalkRouteDb").collection("posts");
     const commentsCollection = client.db("TalkRouteDb").collection("comments");
+    const announcementCollection = client
+      .db("TalkRouteDb")
+      .collection("announcements");
 
     // jwt related api
 
@@ -41,6 +44,8 @@ async function run() {
     });
 
     // middleware----------------
+
+    // verify token
 
     const verifyToken = (req, res, next) => {
       // console.log("inside verify token", req.headers.authorization);
@@ -59,29 +64,57 @@ async function run() {
       });
     };
 
+    // use verify admin after verifyToken
+
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      const isAdmin = user?.role === "admin";
+      if (!isAdmin) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      next();
+    };
+
+    // annoucement related------------
+
+    // post user
+
+    app.post("/announcements", verifyToken, verifyAdmin, async (req, res) => {
+      const announcement = req.body;
+      const result = await announcementCollection.insertOne(announcement);
+      res.send(result);
+    });
+
     // user related Api
     // get all user
-    app.get("/users", verifyToken, async (req, res) => {
+    app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
 
     //user admin
-    app.get("/users/admin/:email", verifyToken, async (req, res) => {
-      const email = req.params.email;
+    app.get(
+      "/users/admin/:email",
+      verifyToken,
 
-      if (email !== req.decoded.email) {
-        return res.status(403).send({ message: "forbidden access" });
-      }
+      async (req, res) => {
+        const email = req.params.email;
 
-      const query = { email: email };
-      const user = await userCollection.findOne(query);
-      let admin = false;
-      if (user) {
-        admin = user?.role === "admin";
+        if (email !== req.decoded.email) {
+          return res.status(403).send({ message: "forbidden access" });
+        }
+
+        const query = { email: email };
+        const user = await userCollection.findOne(query);
+        let admin = false;
+        if (user) {
+          admin = user?.role === "admin";
+        }
+        res.send({ admin });
       }
-      res.send({ admin });
-    });
+    );
     // post user
     app.post("/users", async (req, res) => {
       const user = req.body;
@@ -98,6 +131,8 @@ async function run() {
 
     app.patch(
       "/users/admin/:id",
+      verifyToken,
+      verifyAdmin,
 
       async (req, res) => {
         const id = req.params.id;
