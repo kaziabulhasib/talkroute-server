@@ -79,6 +79,13 @@ async function run() {
 
     // annoucement related------------
 
+    // get all announcements
+
+    app.get("/announcements", async (req, res) => {
+      const result = await announcementCollection.find().toArray();
+      res.send(result);
+    });
+
     // post user
 
     app.post("/announcements", verifyToken, verifyAdmin, async (req, res) => {
