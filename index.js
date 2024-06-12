@@ -157,19 +157,44 @@ async function run() {
     //------------------------------------------------------------user related end
 
     // Get all posts
+    // app.get("/posts", async (req, res) => {
+    //   const result = await postsCollection
+    //     .find()
+    //     .sort({ postTime: -1 })
+    //     .toArray();
+    //   res.send(result);
+    // });
+
     app.get("/posts", async (req, res) => {
-      const result = await postsCollection
-        .find()
-        .sort({ postTime: -1 })
-        .toArray();
-      res.send(result);
+      const tag = req.query.tag;
+      const query = tag ? { postTag: tag } : {};
+      try {
+        const result = await postsCollection
+          .find(query)
+          .sort({ postTime: -1 })
+          .toArray();
+        res.send(result);
+      } catch (error) {
+        console.error("Failed to fetch posts:", error);
+        res.status(500).send("Internal Server Error");
+      }
     });
 
     // Search posts by tag
+    // app.get("/posts/search", async (req, res) => {
+    //   const query = req.query.query;
+    //   const result = await postsCollection
+    //     .find({ tags: { $regex: query, $options: "i" } })
+    //     .sort({ postTime: -1 })
+    //     .toArray();
+    //   res.send(result);
+    // });
+
     app.get("/posts/search", async (req, res) => {
       const query = req.query.query;
+      const regexPattern = new RegExp(`^${query}$`, "i"); // Exact match ignoring case
       const result = await postsCollection
-        .find({ tags: { $regex: query, $options: "i" } })
+        .find({ postTag: regexPattern })
         .sort({ postTime: -1 })
         .toArray();
       res.send(result);
